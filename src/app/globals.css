@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.ant-table-tbody tr {
+    background-color: white !important;
+}
+
+.ant-table-cell {
+    padding: 8px 0px !important;
+}
+
+.ant-table-thead .ant-table-cell {
+    background-color: #5B48BB08 !important;
+    padding: 8px 6px !important;
+}
+
+.ant-table-thead {
+    border-radius: 11px !important;
+}
+.premium .ant-select-selector{
+    border: none !important;
+    background-color: #f4f3f808!important;
+    outline: none !important;
+}
+
+@media screen and (max-width: 767px) {
+    .table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+        border: 1px solid #ddd;
+    }
+}
+.button-color{
+    background-color: #803c19;
+}
+.button-color:hover{
+    background-color: #a04d23;
+}
+
+.scrollable-menu {
+    max-height: 40px; /* Adjust this value as needed */
+    overflow-y: auto;
+  }
+
+  /* styles/globals.css or any other CSS file */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+  }
+  
