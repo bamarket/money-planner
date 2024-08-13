@@ -13,6 +13,7 @@ const Form = ({
   title,
 }) => {
   const [open, setOpen] = useState(false);
+  const [priceAccordingToUsd, setPriceAccordingToUsd] = useState()
   const [drawerData, setDrawerdata] = useState([]);
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +44,9 @@ const Form = ({
 
   const showDrawer = async (value) => {
     setOpen(true);
-    let response = await axios.get(`https://money-planner-server.vercel.app/api/${value}`);
+    let response = await axios.get(
+      `https://money-planner-server.vercel.app/api/${value}`
+    );
     console.log(response);
     setDrawerdata(response?.data);
   };
@@ -59,6 +62,12 @@ const Form = ({
     onClose();
     // You can perform other actions here, such as updating state or triggering other functions
   };
+
+  const setPrice = (value)=>{
+    const price = data.recievingCurrency * value.price;
+    console.log(value)
+    console.log(price)
+  }
 
   return (
     <div
@@ -86,7 +95,7 @@ const Form = ({
                     <p>Email: {item.email}</p>
                     <p>Phone: {item.phone}</p>
                     <p>Country: {item.country}</p>
-                    <p>Country: {item.city}</p>
+                    <p>City: {item.city}</p>
                   </div>
                 }
               />
@@ -135,24 +144,13 @@ const Form = ({
           {title === "Transaction" ? (
             <form>
               <div className="mb-6">
-                <input
-                  name="sendingAmount"
-                  value={data?.sendingAmount}
-                  onChange={handleChange}
-                  className="appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  type="number"
-                  placeholder="Sending Amount"
-                  style={{ backgroundColor: "#5B48BB08" }}
-                />
-              </div>
-              <div className="mb-6">
                 <div
                   className="flex items-center border rounded-lg py-3 px-3"
                   style={{ backgroundColor: "#5B48BB08" }}
                 >
                   <select
                     name="sendingCurrency"
-                    value={data?.sendingCurrency}
+                    defaultValue={data?.sendingCurrency}
                     onChange={handleChange}
                     className="w-full bg-transparent border-none text-gray-700 leading-tight focus:outline-none"
                   >
@@ -165,15 +163,16 @@ const Form = ({
               </div>
               <div className="mb-6">
                 <input
-                  name="receivingAmount"
-                  value={data.receivingAmount}
+                  name="sendingAmount"
+                  value={data?.sendingAmount}
                   onChange={handleChange}
-                  className="shadow appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   type="number"
-                  placeholder="Recieving Amount"
+                  placeholder="Sending Amount"
                   style={{ backgroundColor: "#5B48BB08" }}
                 />
               </div>
+
               <div className="mb-6">
                 <div
                   className="flex items-center border rounded-lg py-3 px-3"
@@ -182,7 +181,18 @@ const Form = ({
                   <select
                     name="recievingCurrency"
                     value={data?.recievingCurrency}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const selectedIndex = e.target.selectedIndex - 1; // Adjust index as the first option is the placeholder
+                      const selectedElement = exchangeRates[selectedIndex];
+                      setPriceAccordingToUsd(selectedElement.price)
+                      const price = selectedElement?.price * data?.sendingAmount;
+
+                      setdata((prevdata) => ({
+                        ...prevdata,
+                        receivingAmount: price,
+                        recievingCurrency: e.target.value
+                      }));
+                    }}
                     className="w-full bg-transparent border-none text-gray-700 leading-tight focus:outline-none"
                   >
                     <option value="" disabled>
@@ -190,7 +200,7 @@ const Form = ({
                     </option>
                     {exchangeRates.map((element, indx) => {
                       return (
-                        <option key={indx} value={element.convertingCurrency}>
+                        <option onClick={()=>setPrice(element)} key={indx} value={element.convertingCurrency}>
                           {element.convertingCurrency}
                         </option>
                       );
@@ -198,6 +208,11 @@ const Form = ({
                   </select>
                 </div>
               </div>
+              <div className="mb-6">
+                    <h1 className="my-2">1 {data?.sendingCurrency} = {priceAccordingToUsd} {data?.recievingCurrency} </h1>
+                    <h1>The Recieving Amount will be {data?.receivingAmount} {data?.recievingCurrency}</h1>
+              </div>
+
               <div className="flex justify-end">
                 <button
                   onClick={handleSave}

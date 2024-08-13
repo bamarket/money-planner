@@ -142,7 +142,7 @@ const Page = () => {
     setTransactionData({
       sendingAmount: Number,
       receivingAmount: Number,
-      sendingCurrency: "",
+      sendingCurrency: "USD",
       recievingCurrency: "",
     });
   };
@@ -191,20 +191,6 @@ const Page = () => {
     setCurrentStep(1);
   };
 
-  const handleSearch = (event) => {
-    const value = event.target.value;
-    setSearchTerm(value);
-
-    if (value === "") {
-      setFilteredData(fullData); // Show all data if search term is empty
-    } else {
-      // Filter data based on search term
-      const results = fullData.filter((item) =>
-        item[searchType]?.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredData(results);
-    }
-  };
 
   const [selectedMemberType, setSelectedMemberType] = useState("");
 
@@ -233,7 +219,7 @@ const Page = () => {
           {
             key: "1",
             icon: <FaRegEdit size={20} />,
-            label: "Edit Profile",
+            label: "Edit",
             onClick: (record) => router.push(`/edituser/${record?._id}`),
           },
           {
@@ -243,8 +229,8 @@ const Page = () => {
             onClick: (record) =>
               deleteMutation.mutate({
                 id: record._id,
-                url: `user/delete-user`,
-                queryKey: "User",
+                url: `transaction`,
+                queryKey: "Transaction",
               }),
           },
         ]
@@ -312,12 +298,6 @@ const Page = () => {
       title: "Receiving Currency",
       dataIndex: "recievingCurrency",
       key: "recievingCurrency",
-    },
-    {
-      title: "Created",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (date) => new Date(date).toLocaleDateString(),
     },
     {
       title: "Actions",

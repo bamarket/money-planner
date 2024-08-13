@@ -8,11 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const EditUser = () => {
   const { id } = useParams();
-  const { data, error, isLoading } = useGetQuery({
-    queryKey: ["User", id],
-    url: `transaction/get-transaction-with-id/${id}`,
-  });
-
+  const [priceAccordingToUsd, setPriceAccordingToUsd] = useState()
   const [senderData, setsenderData] = useState({
     firstName: "",
     lastName: "",
@@ -43,10 +39,23 @@ const EditUser = () => {
     sendingCurrency: "",
     recievingCurrency: "",
   });
+  const { data, error, isLoading } = useGetQuery({
+    queryKey: ["User", id],
+    url: `transaction/get-transaction-with-id/${id}`,
+  });
+
+  const {
+    data: exchangeRates,
+    errorr,
+    isLoadingg,
+  } = useGetQuery({
+    queryKey: ["exchangeRates"],
+    url: "exchange/exchangerates",
+  });
+
 
   useEffect(() => {
     if (data) {
-      console.log(data);
       setsenderData(data?.sender);
       setreceiverData(data?.receiver);
       setTransactionData({
@@ -55,10 +64,10 @@ const EditUser = () => {
         sendingCurrency: data?.sendingCurrency,
         recievingCurrency: data?.recievingCurrency,
       });
-      }
-      }, [data]);
-      
-      console.log(transactionData)
+    }
+  }, [data]);
+
+
   const handleChange = (e, setState, state) => {
     const { name, value } = e.target;
     setState({
@@ -80,10 +89,10 @@ const EditUser = () => {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingg) {
     return <div>Loading...</div>;
   }
-  if (error) {
+  if (error || errorr) {
     return <div>{error.message}</div>;
   }
 
@@ -91,7 +100,7 @@ const EditUser = () => {
     <div>
       <ToastContainer />
       <form className="max-w-7xl mx-auto p-4 mb-5">
-        <h1 className="text-2xl font-bold mb-4">User Form</h1>
+        <h1 className="text-2xl font-bold mb-4">Sender Data</h1>
 
         {/* Sender Data */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -358,7 +367,7 @@ const EditUser = () => {
           </div>
 
           {/* Receiving Amount */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <label className="block text-gray-700">Receiving Amount</label>
             <input
               type="text"
@@ -371,7 +380,7 @@ const EditUser = () => {
               }
               required
             />
-          </div>
+          </div> */}
 
           {/* Sending Currency */}
           <div className="mb-6">
@@ -381,7 +390,7 @@ const EditUser = () => {
               name="sendingCurrency"
               className="appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               style={{ backgroundColor: "#5B48BB08" }}
-              value={transactionData.sendingCurrency}
+              defaultValue={transactionData.sendingCurrency}
               onChange={(e) =>
                 handleChange(e, setTransactionData, transactionData)
               }
@@ -389,8 +398,7 @@ const EditUser = () => {
               <option value="" disabled>
                 Sending Currency
               </option>
-              <option value="Usd">Usd</option>
-              <option value="Pkr">PKR</option>
+              <option value="USD">Usd</option>
               {/* Add more currencies as needed */}
             </select>
           </div>
@@ -403,17 +411,49 @@ const EditUser = () => {
               className="appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               style={{ backgroundColor: "#5B48BB08" }}
               value={transactionData.recievingCurrency}
-              onChange={(e) =>
-                handleChange(e, setTransactionData, transactionData)
-              }
+              onChange={(e) => {
+                const selectedIndex = e.target.selectedIndex - 1; // Adjust index as the first option is the placeholder
+                const selectedElement = exchangeRates[selectedIndex];
+                setPriceAccordingToUsd(selectedElement.price)
+                const price = selectedElement?.price * transactionData?.sendingAmount;
+
+                setTransactionData((prevdata) => ({
+                  ...prevdata,
+                  receivingAmount: price,
+                  recievingCurrency: e.target.value
+                }));
+              }}
             >
               <option value="" disabled>
                 Sending Currency
               </option>
-              <option value="Usd">Usd</option>
-              <option value="Pkr">PKR</option>
-              {/* Add more currencies as needed */}
+              {Array.isArray(exchangeRates) &&
+                exchangeRates.map((element, indx) => {
+                  return (
+                    <option
+                      onClick={() => setPrice(element)}
+                      key={indx}
+                      value={element.convertingCurrency}
+                    >
+                      {element.convertingCurrency}
+                    </option>
+                  );
+                })}
             </select>
+          </div>
+
+          <div className="mb-6">
+            <h1>
+              The Recieving Amount is {data?.receivingAmount}{" "}
+              {data?.recievingCurrency}
+            </h1>
+            <h1 className="my-2">
+               1 {transactionData?.sendingCurrency} = {priceAccordingToUsd}  {transactionData?.recievingCurrency}{" "}
+            </h1>
+            <h1>
+              New Recieving Amount will be {transactionData?.receivingAmount}{" "}
+              {transactionData?.recievingCurrency}
+            </h1>
           </div>
         </div>
 

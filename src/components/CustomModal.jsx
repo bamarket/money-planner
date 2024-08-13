@@ -87,15 +87,18 @@ const CustomModal = ({ title, visible, onCancel, initialData, mode, form }) => {
       });
     }else if (mode === "create" && form === "exchangeRates") {
       url = "exchange/add-exchangerate";
+      payload.convertingCurrency = payload?.convertingCurrency.toUpperCase();
       queryKey = "exchangeRates"
       createMutation.mutate({ data: payload, url, queryKey });
     } else if (mode === "edit" && form === "exchangeRates") {
       payload.id = initialData._id; // Add the user ID to the payload
       url = `exchange/${initialData._id}`;
+      payload.convertingCurrency = payload?.convertingCurrency.toUpperCase();
       queryKey = "exchangeRates"
       console.log(payload)
       updateMutation.mutate({ data: payload, url, queryKey });
     }
+    onCancel();
   };
 
   return (
