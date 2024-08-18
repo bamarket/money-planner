@@ -7,6 +7,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import CustomModal from "@/components/CustomModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import Papa from "papaparse";
 import { toast, ToastContainer } from "react-toastify";
 import {
   useUpdateMutation,
@@ -20,8 +21,149 @@ import { createRequest, getFilteredMembers } from "../api";
 import { useRouter } from "next/navigation";
 import { useStateContext } from "../context/stateContext";
 import Form from "@/components/Form";
+import { FaPrint } from "react-icons/fa6";
 
 const { Option } = Select;
+
+const printReceipt = (record) => {
+  console.log(record);
+  const receiptHTML = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Receipt</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f8f8f8;
+            }
+
+            .receipt-container {
+                background-color: #fff;
+                padding: 20px;
+                max-width: 400px;
+                margin: 0 auto;
+                border: 1px solid #ccc;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .receipt-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .receipt-header img {
+                width: 100px;
+                margin-bottom: 10px;
+            }
+
+            .receipt-header h1 {
+                font-size: 18px;
+                margin: 0;
+            }
+
+            .receipt-section {
+                margin-bottom: 15px;
+            }
+
+            .receipt-section h3 {
+                margin: 0 0 5px;
+                font-size: 16px;
+                text-transform: uppercase;
+            }
+
+            .receipt-section p {
+                margin: 0;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .receipt-details {
+                width: 100%;
+                margin-bottom: 20px;
+                border-collapse: collapse;
+                font-size: 14px;
+            }
+
+            .receipt-details th, .receipt-details td {
+                padding: 5px 0;
+                text-align: left;
+            }
+
+            .receipt-footer {
+                text-align: center;
+                font-size: 12px;
+                color: #666;
+                border-top: 1px solid #ccc;
+                padding-top: 10px;
+                margin-top: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="receipt-container">
+            <div class="receipt-header">
+                <h1>Pre-Order Confirmation</h1>
+                <p>Receipt / Válido Como Recibo</p>
+            </div>
+
+            <div class="receipt-section">
+                <h3>Sender / Cliente</h3>
+                <p>Name: ${record?.sender?.firstName} ${record?.sender?.middleName || ''} ${record?.sender?.lastName}</p>
+                <p>Country: ${record?.sender?.country}</p>
+                <p>Street: ${record?.sender?.street || 'N/A'}</p>
+                <p>Zipcode: ${record?.sender?.zipcode || 'N/A'}</p>
+                <p>Email: ${record?.sender?.email || 'N/A'}</p>
+                <p>Phone: ${record?.sender?.phone}</p>
+            </div>
+
+            <div class="receipt-section">
+                <h3>Recipient / Beneficiario</h3>
+                <p>Name: ${record?.receiver?.firstName} ${record?.receiver?.middleName || ''} ${record?.receiver?.lastName}</p>
+                <p>Country: ${record?.receiver?.country}</p>
+                <p>Street: ${record?.receiver?.street || 'N/A'}</p>
+                <p>Zipcode: ${record?.receiver?.zipcode || 'N/A'}</p>
+                <p>Email: ${record?.receiver?.email || 'N/A'}</p>
+                <p>Phone: ${record?.receiver?.phone}</p>
+            </div>
+
+            <div class="receipt-section">
+                <h3>Transaction Details</h3>
+                <p>Sending Amount: ${record?.sendingAmount} ${record?.sendingCurrency}</p>
+                <p>Receiving Amount: ${record?.receivingAmount} ${record?.recievingCurrency}</p>
+                <p>Made By: ${record?.madeBy || 'N/A'}</p>
+            </div>
+
+            <div class="receipt-section">
+                <h3>Transaction Date</h3>
+                <p>${new Date(record?.createdAt).toLocaleString()}</p>
+            </div>
+
+            <div class="receipt-section">
+                <h3>Transaction ID</h3>
+                <p>${record?._id}</p>
+            </div>
+
+            <div class="receipt-footer">
+                <p>Please verify the information above to ensure it is correct before continuing with your transaction.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open("", "_blank", "width=800,height=600");
+  printWindow.document.write(receiptHTML);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+};
+
 
 const Page = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -59,7 +201,6 @@ const Page = () => {
     storedUser = storedUser ? JSON.parse(storedUser) : null;
     setUser(storedUser);
   }, [userData]);
-
 
   useEffect(() => {
     if (data) {
@@ -191,7 +332,6 @@ const Page = () => {
     setCurrentStep(1);
   };
 
-
   const [selectedMemberType, setSelectedMemberType] = useState("");
 
   const typeOfMember = async (value) => {
@@ -224,6 +364,12 @@ const Page = () => {
           },
           {
             key: "2",
+            icon: <FaPrint size={20} />,
+            label: "Print",
+            onClick: (record) => printReceipt(record),
+          },
+          {
+            key: "3",
             icon: <RiDeleteBin6Line size={20} />,
             label: "Delete",
             onClick: (record) =>
@@ -238,7 +384,7 @@ const Page = () => {
 
   const columns = [
     {
-      title: "Sender Name",
+      title: "Sender",
       render: (data) => (
         <div className="flex items-center">
           <div className="flex flex-col">
@@ -257,9 +403,10 @@ const Page = () => {
           </div>
         </div>
       ),
+      className: "hidden md:table-cell",
     },
     {
-      title: "Reciever Name",
+      title: "Reciever",
       render: (data) => (
         <div className="flex items-center">
           <div className="flex flex-col">
@@ -278,26 +425,37 @@ const Page = () => {
           </div>
         </div>
       ),
+      className: "hidden md:table-cell",
     },
     {
       title: "Sending Amount",
       dataIndex: "sendingAmount",
       key: "sendingAmount",
+      className: "hidden md:table-cell",
     },
     {
       title: "Sending Currency",
       dataIndex: "sendingCurrency",
       key: "sendingCurrency",
+      className: "hidden md:table-cell",
     },
     {
       title: "Receiving Amount",
       dataIndex: "receivingAmount",
       key: "receivingAmount",
+      className: "hidden md:table-cell",
     },
     {
       title: "Receiving Currency",
       dataIndex: "recievingCurrency",
       key: "recievingCurrency",
+      className: "hidden md:table-cell",
+    },
+    {
+      title: "Made By",
+      dataIndex: "madeBy",
+      key: "madeBy",
+      className: "hidden md:table-cell",
     },
     {
       title: "Actions",
@@ -326,6 +484,154 @@ const Page = () => {
           </svg>
         </Dropdown>
       ),
+      className: "hidden md:table-cell",
+    },
+  ];
+
+  const flattenTransactions = (transactions) => {
+    return transactions.map((transaction) => ({
+      "Sender FirstName": transaction.sender.firstName,
+      "Sender MiddleName": transaction.sender.middleName,
+      "Sender LastName": transaction.sender.lastName,
+      "Sender Country": transaction.sender.country,
+      "Sender Street": transaction.sender.street,
+      "Sender Zipcode": transaction.sender.zipcode,
+      "Sender Email": transaction.sender.email,
+      "Sender Phone": transaction.sender.phone,
+      "Receiver FirstName": transaction.receiver.firstName,
+      "Receiver MiddleName": transaction.receiver.middleName,
+      "Receiver LastName": transaction.receiver.lastName,
+      "Receiver Country": transaction.receiver.country,
+      "Receiver Street": transaction.receiver.street,
+      "Receiver Zipcode": transaction.receiver.zipcode,
+      "Receiver Email": transaction.receiver.email,
+      ReceiverPhone: transaction.receiver.phone,
+      MadeBy: transaction.madeBy,
+      "Sending Currency": transaction.sendingCurrency,
+      "Receiving Currency": transaction.recievingCurrency,
+      "Sending Amount": transaction.sendingAmount,
+      "Receiving Amount": transaction.receivingAmount,
+      createdAt: transaction.createdAt,
+    }));
+  };
+
+  const downloadCSV = () => {
+    // Assume `transactions` is the data retrieved from your database
+    const flattenedData = flattenTransactions(filteredData);
+
+    // Convert flattened data to CSV format
+    const csv = Papa.unparse(flattenedData);
+
+    // Create a link element, set its href to the CSV data, and simulate a click to download the file
+    const link = document.createElement("a");
+    link.href = `data:text/csv;charset=utf-8,%EF%BB%BF${encodeURIComponent(
+      csv
+    )}`;
+    link.download = "transactions.csv";
+    link.click();
+  };
+
+  const mobileColumns = [
+    {
+      title: "Details",
+      render: (record) => (
+        <div className="flex flex-col p-4 bg-gray-100 rounded-md mb-4">
+          <div className="flex items-center mb-2">
+            <span className="ml-2 font-semibold">
+              Sender:{" "}
+              <div className="flex items-center mb-2">
+                <div className="flex items-center">
+                  <div className="flex flex-col">
+                    <span className="ml-2 font-bold">
+                      {record?.sender?.firstName} {record?.sender?.middleName}{" "}
+                      {record?.sender?.lastName}
+                    </span>
+                    <span className="ml-2">{record.sender?.phone}</span>
+                    <span className="ml-2">{record.sender?.email}</span>
+                    <span className="ml-2">
+                      {record.sender?.country} {record?.sender?.city}
+                    </span>
+                    <span className="ml-2">
+                      {record.sender?.street} {record?.sender?.zipcode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </span>
+          </div>
+          <div className="flex items-center mb-2">
+            <span className="ml-2 font-semibold">
+              Reciever:{" "}
+              <div className="flex items-center mb-2">
+                <div className="flex items-center">
+                  <div className="flex flex-col">
+                    <span className="ml-2 font-bold">
+                      {record?.receiver?.firstName}{" "}
+                      {record?.receiver?.middleName}{" "}
+                      {record?.receiver?.lastName}
+                    </span>
+                    <span className="ml-2">{record.receiver?.phone}</span>
+                    <span className="ml-2">{record.receiver?.email}</span>
+                    <span className="ml-2">
+                      {record.receiver?.country} {record?.receiver?.city}
+                    </span>
+                    <span className="ml-2">
+                      {record.receiver?.street} {record?.receiver?.zipcode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </span>
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Sending Amount: </span>
+            {record.sendingAmount}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Sending Currency: </span>
+            {record.sendingCurrency}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Receiving Amount: </span>
+            {record.receivingAmount}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Receiving Currency: </span>
+            {record.recievingCurrency}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Made By: </span>
+            {record.madeBy}
+          </div>
+          <div className="mt-2">
+            <Dropdown
+              menu={{
+                items: actions.map((action) => ({
+                  ...action,
+                  onClick: () => action.onClick(record),
+                })),
+              }}
+              trigger={["click"]}
+            >
+              <svg
+                className="cursor-pointer"
+                width="6"
+                height="13"
+                viewBox="0 0 3 13"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="1.5" cy="1.5" r="1.5" fill="gray" />
+                <circle cx="1.5" cy="6.5" r="1.5" fill="gray" />
+                <circle cx="1.5" cy="11.5" r="1.5" fill="gray" />
+              </svg>
+            </Dropdown>
+          </div>
+          <hr className="border-t border-gray-300 mt-2" />{" "}
+          {/* Breakpoint line */}
+        </div>
+      ),
+      responsive: ["xs"], // Display on extra small devices
     },
   ];
 
@@ -346,30 +652,15 @@ const Page = () => {
     <div className="p-8">
       <ToastContainer />
       <div className="flex justify-between items-center">
+        <div className="grid grid-cols-2 gap-4"></div>
         <div className="grid grid-cols-2 gap-4">
-          {/* <div className="flex items-center border-secondary border-[1px] rounded-lg overflow-hidden">
-            <FaSearch className="text-gray-300 mx-2" />
-            <Input
-              className="border-none outline-none flex-1 p-2"
-              placeholder="Search with name"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </div>
-
-          <Select
-            className="w-full border-none outline-none flex-1 h-10"
-            placeholder="Type of Member"
-            onChange={typeOfMember}
-            value={selectedMemberType}
+          <button
+            onClick={downloadCSV}
+            className="text-white flex items-center justify-center py-2 px-4 rounded-lg button-color"
           >
-            <Option value="All">All</Option>
-            <Option value="Free">Free</Option>
-            <Option value="Premium">Premium</Option>
-            <Option value="Vip">Vip</Option>
-          </Select> */}
-        </div>
-        <div className="grid grid-cols-1 gap-4">
+            <FaPlus className="mr-2" />
+            <span className="text-[16px]">Download CSV</span>
+          </button>
           <button
             onClick={() => showModal("create")}
             className="text-white flex items-center justify-center py-2 px-4 rounded-lg button-color"
@@ -391,7 +682,7 @@ const Page = () => {
               {" "}
               <Table
                 dataSource={paginatedData}
-                columns={columns}
+                columns={columns.concat(mobileColumns)}
                 rowKey="id"
                 pagination={false}
                 className="rounded-lg table-responsive"
@@ -409,7 +700,7 @@ const Page = () => {
             <>
               {" "}
               <Table
-                columns={columns}
+                columns={columns.concat(mobileColumns)}
                 dataSource={filteredData}
                 rowKey="_id"
                 pagination={false}
@@ -435,6 +726,7 @@ const Page = () => {
           handleSave={handleSenderData}
           handleCancel={handleCancel}
           isModalVisible={isModalVisible}
+          userId={user?._id}
           title={"Sender"}
         />
       )}
@@ -442,7 +734,9 @@ const Page = () => {
         <Form
           title={"Reciever"}
           data={recieverData}
+          senderPhone={senderData?.phone}
           setdata={setrecieverData}
+          userId={user?._id}
           handleSave={handleRecieverData}
           handleCancel={handleCancel}
           isModalVisible={isModalVisible}
@@ -453,6 +747,7 @@ const Page = () => {
           title={"Transaction"}
           data={transactionData}
           setdata={setTransactionData}
+          userId={user?._id}
           handleSave={handleSubmit}
           handleCancel={handleCancel}
           isModalVisible={isModalVisible}

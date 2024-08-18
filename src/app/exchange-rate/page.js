@@ -81,16 +81,19 @@ const Page = () => {
       title: "Orignal Currency",
       key: "originalCurrency",
       dataIndex: "originalCurrency",
+      className: "hidden md:table-cell",
     },
     {
       title: "Converting Currency",
       key: "convertingCurrency",
       dataIndex: "convertingCurrency",
+      className: "hidden md:table-cell",
     },
     {
       title: "Price",
       dataIndex: "price",
       key: "price",
+      className: "hidden md:table-cell",
     },
     {
       title: "Actions",
@@ -119,6 +122,55 @@ const Page = () => {
           </svg>
         </Dropdown>
       ),
+      className: "hidden md:table-cell",
+    },
+  ];
+  const mobileColumns = [
+    {
+      title: "Details",
+      render: (record) => (
+        <div className="flex flex-col p-4 bg-gray-100 rounded-md mb-4">
+          <div className="mb-1">
+            <span className="font-semibold">Orignal Currency: </span>
+            {record.originalCurrency}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Converting Currency: </span>
+            {record.convertingCurrency}
+          </div>
+          <div className="mb-1">
+            <span className="font-semibold">Price: </span>
+            {record.price}
+          </div>
+          <div className="mt-2">
+            <Dropdown
+              menu={{
+                items: actions.map((action) => ({
+                  ...action,
+                  onClick: () => action.onClick(record),
+                })),
+              }}
+              trigger={["click"]}
+            >
+              <svg
+                className="cursor-pointer"
+                width="6"
+                height="13"
+                viewBox="0 0 3 13"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle cx="1.5" cy="1.5" r="1.5" fill="gray" />
+                <circle cx="1.5" cy="6.5" r="1.5" fill="gray" />
+                <circle cx="1.5" cy="11.5" r="1.5" fill="gray" />
+              </svg>
+            </Dropdown>
+          </div>
+          <hr className="border-t border-gray-300 mt-2" />{" "}
+          {/* Breakpoint line */}
+        </div>
+      ),
+      responsive: ["xs"], // Display on extra small devices
     },
   ];
 
@@ -138,7 +190,7 @@ const Page = () => {
       <div>
         <Table
           dataSource={data}
-          columns={columns}
+          columns={columns.concat(mobileColumns)}
           rowKey="id"
           pagination={false}
           className="rounded-lg table-responsive"

@@ -9,14 +9,15 @@ const withAuth = (WrappedComponent) => {
 
     useEffect(() => {
       const checkAuth = async () => {
-        // Show loader for 3 seconds
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        setTimeout(() => {
+          console.log("loading");
+        }, 3000); // Simulate loading delay
+        
         const token = localStorage.getItem("tokenmoneyplanner");
         if (!token) {
           router.push("/login"); // Redirect to login if no token is found
         } else {
-          setLoading(false); // Stop loading after authentication check
+          setLoading(false); // Stop loading when authentication is complete
         }
       };
 
@@ -26,9 +27,7 @@ const withAuth = (WrappedComponent) => {
     if (loading) {
       // Display a loading spinner with custom size
       return (
-        <div className="spinner-container flex justify-center items-center h-screen">
-          <Spin size="large" />
-        </div>
+          <Spin size="large" className="spinner-container"/>
       );
     }
 

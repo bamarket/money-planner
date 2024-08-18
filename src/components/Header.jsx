@@ -110,7 +110,7 @@ const Header = () => {
       {token && (
         <header className="bg-white border-b">
           <div className="flex justify-between items-center h-[3.9rem] px-4">
-            {returnTextOnPath(pathname)}
+            <div className="md:flex hidden">{returnTextOnPath(pathname)}</div>
             <div className="flex border-l h-[3.9rem] items-center">
               <div className="px-2">
                 <Image
@@ -140,11 +140,13 @@ const Header = () => {
                   size={25}
                 />
                 {logout && (
-                  <div
-                    className="text-lg cursor-pointer"
-                    onClick={logoutButton}
-                  >
-                    <p>Logout</p>
+                  <div className="absolute right-0 top-[3.9rem] mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                    <button
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={logoutButton}
+                    >
+                      Logout
+                    </button>
                   </div>
                 )}
               </div>

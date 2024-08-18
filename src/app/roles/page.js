@@ -99,21 +99,25 @@ const Page = () => {
           <span className="ml-2">{data.name}</span>
         </div>
       ),
+      className: "hidden md:table-cell",
     },
     {
       title: "Phone no",
       dataIndex: "phone",
       key: "phone",
+      className: "hidden md:table-cell",
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      className: "hidden md:table-cell",
     },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
+      className: "hidden md:table-cell",
     },
 
     {
@@ -143,9 +147,72 @@ const Page = () => {
           </svg>
         </Dropdown>
       ),
+      className: "hidden md:table-cell",
     },
   ];
 ;
+const mobileColumns = [
+  {
+    title: "Details",
+    render: (record) => (
+      <div className="flex flex-col p-4 bg-gray-100 rounded-md mb-4">
+        <div className="flex items-center mb-2">
+          <img
+            src={
+              data.image
+                ? data?.image
+                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7f1Es84yxr11Bfj_10hV2_srMeJ-Ry71Yiw&s"
+            }
+            width={30}
+            height={30}
+            className="w-8 h-8 object-cover rounded-full"
+          />
+          <span className="ml-2 font-semibold">Name: {record.name}</span>
+        </div>
+        <div className="mb-1">
+          <span className="font-semibold">Email: </span>
+          {record.email}
+        </div>
+        <div className="mb-1">
+          <span className="font-semibold">Phone: </span>
+          {record.phone}
+        </div>
+        <div className="mb-1">
+          <span className="font-semibold">Role: </span>
+          {record.role}
+        </div>
+        <div className="mt-2">
+          <Dropdown
+            menu={{
+              items: actions.map((action) => ({
+                ...action,
+                onClick: () => action.onClick(record),
+              })),
+            }}
+            trigger={["click"]}
+          >
+            <svg
+              className="cursor-pointer"
+              width="6"
+              height="13"
+              viewBox="0 0 3 13"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="1.5" cy="1.5" r="1.5" fill="gray" />
+              <circle cx="1.5" cy="6.5" r="1.5" fill="gray" />
+              <circle cx="1.5" cy="11.5" r="1.5" fill="gray" />
+            </svg>
+          </Dropdown>
+        </div>
+        <hr className="border-t border-gray-300 mt-2" />{" "}
+        {/* Breakpoint line */}
+      </div>
+    ),
+    responsive: ["xs"], // Display on extra small devices
+  },
+];
+
   return (
     <>
       {" "}
@@ -172,7 +239,7 @@ const Page = () => {
               <div className="text-[20px] font-semibold mb-3">All Roles</div>
               <Table
                 dataSource={data?.users} // Update to match API response
-                columns={columns}
+                columns={columns.concat(mobileColumns)}
                 rowKey="_id" // Ensure this matches the key used in your data
                 pagination={false}
                 className="rounded-lg table-responsive"

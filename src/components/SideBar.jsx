@@ -7,6 +7,8 @@ import { IMAGES } from "@/assets";
 import { useStateContext } from "../app/context/stateContext"; // Import the context
 import Image from "next/image";
 import withAuth from "@/app/withauth";
+import { FaBars } from "react-icons/fa6";
+import { FaTimes } from "react-icons/fa";
 
 const SideBar = () => {
   const pathname = usePathname();
@@ -15,6 +17,7 @@ const SideBar = () => {
   const [subMembers, setSubMembers] = useState(false);
   // Define paths where the header should not be displayed
   const hiddenPaths = ["/login", "/register"]; // Add paths here
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Check if the current path is in the hiddenPaths array
   const shouldShowHeader = !hiddenPaths.includes(pathname);
@@ -48,13 +51,40 @@ const SideBar = () => {
   return (
     <>
       {token && (
-        <div className="w-64 h-screen  border-r">
-          <div className="text-lg font-bold mb-4 border-b">
-            <Link href="/" className="flex justify-center items-center">
-              <Image src={IMAGES.logo} alt="logo" width={80} height={100} />
+        <>
+          <div className="lg:hidden flex justify-between items-center p-4 bg-white border-b">
+            <Link href="/" className="flex items-center">
+              <Image
+                src={IMAGES.logo}
+                alt="logo"
+                width={120}
+                height={80}
+                className="hidden md:block"
+              />
             </Link>
+            <FaBars
+              className="text-2xl cursor-pointer"
+              onClick={() => setIsSidebarOpen(true)}
+            />
           </div>
-          <ul className="p-4">
+          <div
+            className={`fixed top-0 left-0 w-64 h-full bg-white shadow-lg z-50 transform ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } transition-transform duration-300 lg:translate-x-0 lg:relative lg:shadow-none`}
+          >
+            <div className="lg:hidden flex justify-between items-center p-4 border-b">
+              {/* <Image src={IMAGES.logo} alt="logo" width={120} height={80} /> */}
+              <FaTimes
+                className="text-2xl cursor-pointer"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+            </div>
+            <div className="lg:block text-lg font-bold mb-4 border-b">
+              <Link href="/" className="flex justify-center items-center">
+                <Image src={IMAGES.logo} alt="logo" width={150} height={100} />
+              </Link>
+            </div>
+            <ul className="p-4">
             {dashboardLinks.map((link) => {
               return (
                 <>
@@ -97,8 +127,9 @@ const SideBar = () => {
                 </>
               );
             })}
-          </ul>
-        </div>
+            </ul>
+          </div>
+        </>
       )}
     </>
   );

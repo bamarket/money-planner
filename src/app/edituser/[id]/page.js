@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import { countries } from "countries-list";
 import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
 const EditUser = () => {
   const { id } = useParams();
@@ -77,7 +78,7 @@ const EditUser = () => {
   };
 
   const updateMutation = useUpdateMutation();
-
+  const router = useRouter();
   const handleSubmit = (e) => {
     e.preventDefault();
     const url = `transaction/${id}`;
@@ -87,6 +88,9 @@ const EditUser = () => {
       url,
       queryKey,
     });
+    setTimeout(() => {
+      router.push("/")
+    }, 3000);
   };
 
   if (isLoading || isLoadingg) {
