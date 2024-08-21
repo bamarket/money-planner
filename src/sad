@@ -15,16 +15,12 @@ const Form = ({
   isModalVisible,
   userId,
   senderPhone,
-  handleSaveAndPrint,
   title,
 }) => {
   const [open, setOpen] = useState(false);
   const [priceAccordingToUsd, setPriceAccordingToUsd] = useState();
   const [drawerData, setDrawerdata] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [fee, setFee] = useState();
-  const [feeValue, setFeeValue] = useState();
-  const [totalReceivingAmount, setTotalRecievingAmount] = useState();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setdata((prevdata) => ({
@@ -32,6 +28,53 @@ const Form = ({
       [name]: value,
     }));
   };
+  let fee;
+
+  switch (true) {
+    case data?.sendingAmount >= 1 && data?.sendingAmount <= 100:
+      fee = "$5";
+      break;
+    case data?.sendingAmount >= 101 && data?.sendingAmount <= 200:
+      fee = "$10";
+      break;
+    case data?.sendingAmount >= 201 && data?.sendingAmount <= 500:
+      fee = "$15";
+      break;
+    case data?.sendingAmount >= 501 && data?.sendingAmount <= 1000:
+      fee = "$30";
+      break;
+    case data?.sendingAmount >= 1001:
+      fee = "3%";
+      break;
+    default:
+      fee = "Invalid amount";
+  }
+
+  let feeValue;
+
+  if (fee.includes("$")) {
+    // Remove the dollar sign and convert the string to a number
+    feeValue = parseFloat(fee.replace("$", ""));
+  } else if (fee.includes("%")) {
+    // Remove the percentage sign, convert to a number, and calculate the percentage of receivingAmount
+    let percentage = parseFloat(fee.replace("%", ""));
+    feeValue = (data?.receivingAmount * percentage) / 100;
+  } else {
+    feeValue = 0; // Default to 0 if fee is not in an expected format
+  }
+
+  const feePriceAccordicgToCurrency = priceAccordingToUsd * feeValue;
+  const totalReceivingAmount =
+    data?.receivingAmount + feePriceAccordicgToCurrency;
+
+  useEffect(()=>{
+    setdata((prevdata) => ({
+      ...prevdata,
+      usdFee: fee,
+      fee: feePriceAccordicgToCurrency,
+      totalAmount: totalReceivingAmount,
+    }));
+  },[fee, totalReceivingAmount])
 
   const {
     data: exchangeRates,
@@ -93,61 +136,6 @@ const Form = ({
     const price = data.recievingCurrency * value.price;
     console.log(value);
     console.log(price);
-  };
-
-  const onChangeReceivingCurrency = (e) => {
-    const selectedIndex = e.target.selectedIndex - 1; // Adjust index as the first option is the placeholder
-    const selectedElement = exchangeRates[selectedIndex];
-    setPriceAccordingToUsd(selectedElement.price);
-    const price = selectedElement?.price * data?.sendingAmount;
-    const totalValue = feeValue * selectedElement?.price;
-    console.log(totalValue, feeValue, priceAccordingToUsd);
-    setdata((prevdata) => ({
-      ...prevdata,
-      receivingAmount: price,
-      recievingCurrency: e.target.value,
-      totalAmount: totalValue,
-    }));
-  };
-
-  const onChangeSendingAmount = (e) => {
-    const value = Number(e.target.value);
-    console.log(typeof value);
-    let a;
-    if (value >= 1 && value <= 100) {
-      setFee("5$");
-      a = value + 5;
-    } else if (value > 100 && value <= 200) {
-      // Changed to strictly greater than 100
-      setFee("10$");
-      a = value + 10;
-    } else if (value > 200 && value <= 500) {
-      // Changed to strictly greater than 200
-      setFee("15$");
-      a = value + 15;
-    } else if (value > 500 && value <= 1000) {
-      // Changed to strictly greater than 500
-      setFee("30$");
-      a = value + 30;
-    } else if (value > 1000) {
-      // Changed to strictly greater than 1000
-      setFee("3%");
-      a = value + value * 0.03; // Adjusted calculation for percentage
-    } else {
-      setFee("Invalid amount");
-      a = 0; // Set a default value to avoid undefined issues
-    }
-    setFeeValue(a);
-    const price = priceAccordingToUsd * value;
-    const totalValue = a * priceAccordingToUsd;
-    console.log(totalValue, feeValue, priceAccordingToUsd);
-    setdata((prevdata) => ({
-      ...prevdata,
-      receivingAmount: price,
-      sendingAmount: value,
-      usdFee: fee,
-      totalAmount: totalValue,
-    }));
   };
 
   let drawerTitle = `Select Previous ${title}`;
@@ -270,7 +258,7 @@ const Form = ({
                 <input
                   name="sendingAmount"
                   value={data?.sendingAmount}
-                  onChange={onChangeSendingAmount}
+                  onChange={handleChange}
                   className="appearance-none border rounded-lg w-full py-4 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   type="number"
                   placeholder="Sending Amount"
@@ -286,7 +274,19 @@ const Form = ({
                   <select
                     name="recievingCurrency"
                     value={data?.recievingCurrency}
-                    onChange={onChangeReceivingCurrency}
+                    onChange={(e) => {
+                      const selectedIndex = e.target.selectedIndex - 1; // Adjust index as the first option is the placeholder
+                      const selectedElement = exchangeRates[selectedIndex];
+                      setPriceAccordingToUsd(selectedElement.price);
+                      const price =
+                        selectedElement?.price * data?.sendingAmount;
+
+                      setdata((prevdata) => ({
+                        ...prevdata,
+                        receivingAmount: price,
+                        recievingCurrency: e.target.value,
+                      }));
+                    }}
                     className="w-full bg-transparent border-none text-gray-700 leading-tight focus:outline-none"
                   >
                     <option value="" disabled>
@@ -309,33 +309,23 @@ const Form = ({
               <div className="mb-6">
                 <h1 className="my-2">
                   1 {data?.sendingCurrency} = {priceAccordingToUsd}{" "}
+                  {data?.recievingCurrency}{" "}
+                </h1>
+                <h1 className="my-1">
+                  The Converted Amount is {data?.receivingAmount}{" "}
                   {data?.recievingCurrency}
                 </h1>
-                {!isNaN(data?.receivingAmount) && (
-                  <h1 className="my-1">
-                    The Converted Amount is {data?.receivingAmount}{" "}
-                    {data?.recievingCurrency}
-                  </h1>
-                )}
                 <h1 className="my-1">Service fee is {fee}</h1>
-                {!isNaN(data?.totalAmount) && (
-                  <h1 className="my-1">
-                    The Recieving Amount will be {data?.totalAmount}{" "}
-                    {data?.recievingCurrency}
-                  </h1>
-                )}
+                <h1 className="my-1">
+                  The Recieving Amount will be {totalReceivingAmount}{" "}
+                  {data?.recievingCurrency}
+                </h1>
               </div>
 
               <div className="flex justify-end">
                 <button
                   onClick={handleSave}
-                  className="text-white flex items-center justify-center py-3 px-4 rounded-lg w-1/2 me-4 button-color"
-                >
-                  Submit
-                </button>
-                <button
-                  onClick={handleSaveAndPrint}
-                  className="text-white flex items-center justify-center py-3 px-4 rounded-lg w-1/2  button-color"
+                  className="text-white flex items-center justify-center py-3 px-4 rounded-lg w-full button-color"
                 >
                   Submit And Print
                 </button>

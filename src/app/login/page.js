@@ -26,10 +26,10 @@ export default function Page() {
       if(response.data.success){
         console.log(response.data.user)
         localStorage.setItem("tokenmoneyplanner", response.data.token);
-        localStorage.setItem("usermoneyplanner", response.data.user);
         localStorage.setItem("usermoneyplanner", JSON.stringify(response.data.user))
         toast.success("correct password");
-        router.push('/transactions');
+        window.location.href = "/transactions";
+        // router.push('/transactions');
       }else{
         toast.error(error.response.data.message || "Wrong Email and password");
       }

@@ -21,8 +21,8 @@ export const useCreateMutation = () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
     },
     onError: (error) => {
-      console.log(error)
-      toast.error(error.response.data.message || "An error occurred");
+      console.log(error);
+      toast.error(error.response?.data?.message || "An error occurred");
     },
   });
 };

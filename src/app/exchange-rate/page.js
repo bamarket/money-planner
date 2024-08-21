@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown, Modal, Select, Table } from "antd";
 import { FaRegEdit } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
@@ -17,11 +17,27 @@ const Page = () => {
   const [modalMode, setModalMode] = useState("create");
   const deleteMutation = useDeleteMutation();
   const updateMutation = useUpdateMutation(); // Add update mutation
-
+  const [user, setUser] = useState(null);
   const { data, error, isLoading } = useGetQuery({
     queryKey: ["exchangeRates"],
     url: "exchange/exchangerates",
   });
+
+  const {
+    data: userData,
+    error: userError,
+    isLoading: isUserLoading,
+  } = useGetQuery({
+    queryKey: ["User"],
+    url: `user/user/${user?._id}`,
+  });
+
+  useEffect(() => {
+    let storedUser = localStorage.getItem("usermoneyplanner");
+    storedUser = storedUser ? JSON.parse(storedUser) : null;
+    setUser(storedUser);
+  }, [userData]);
+
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -56,25 +72,28 @@ const Page = () => {
     });
   };
 
-  const actions = [
-    {
-      key: "1",
-      icon: <FaRegEdit size={20} />,
-      label: "Edit",
-      onClick: (record) => showModal("edit", record),
-    },
-    {
-      key: "2",
-      icon: <RiDeleteBin6Line size={20} />,
-      label: "Delete",
-      onClick: (record) =>
-        deleteMutation.mutate({
-          id: record._id,
-          url: `exchange`,
-          queryKey: "exchangeRates",
-        }),
-    },
-  ];
+  const actions =
+    userData?.role === "Admin"
+      ? [
+          {
+            key: "1",
+            icon: <FaRegEdit size={20} />,
+            label: "Edit",
+            onClick: (record) => showModal("edit", record),
+          },
+          {
+            key: "2",
+            icon: <RiDeleteBin6Line size={20} />,
+            label: "Delete",
+            onClick: (record) =>
+              deleteMutation.mutate({
+                id: record._id,
+                url: `exchange`,
+                queryKey: "exchangeRates",
+              }),
+          },
+        ]
+      : [];
 
   const columns = [
     {
