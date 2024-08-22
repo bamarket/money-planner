@@ -200,10 +200,12 @@ const Page = () => {
     return response?.data;
   };
 
-  const handleSaveAndPrint = async (e)=>{
+  const handleSaveAndPrint = async (e) => {
     const data = await handleSubmit(e);
-    printReceipt(data?.newTransaction);
-  }
+    if (data) {
+      printReceipt(data?.newTransaction);
+    }
+  };
   const [selectedMemberType, setSelectedMemberType] = useState("");
 
   const typeOfMember = async (value) => {
@@ -622,7 +624,7 @@ const Page = () => {
           userId={user?._id}
           handleSave={handleSubmit}
           handleCancel={handleCancel}
-          handleSaveAndPrint = {handleSaveAndPrint}
+          handleSaveAndPrint={handleSaveAndPrint}
           isModalVisible={isModalVisible}
         />
       )}
