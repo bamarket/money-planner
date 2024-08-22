@@ -87,7 +87,6 @@ export const printReceipt = (record) => {
       <body>
           <div class="receipt-container">
                 <div class="company-info">
-                <img class="company-img" src="${logoBase64}" alt="Company Logo"/>
                 <h3>BA Market</h3>
               </div>
               <div class="receipt-header">
