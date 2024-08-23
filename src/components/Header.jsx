@@ -32,7 +32,7 @@ const Header = () => {
   //     console.log(pathname)
   // }, [pathname]);
   // Define paths where the header should not be displayed
-  const hiddenPaths = ["/login", "/register"]; // Add paths here
+  const hiddenPaths = ["/login", "/register", "/forgotpassword", "/resetpassword"];
 
   // Check if the current path is in the hiddenPaths array
   const shouldShowHeader = !hiddenPaths.includes(pathname);

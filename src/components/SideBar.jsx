@@ -16,7 +16,7 @@ const SideBar = () => {
   const { stateType, setStateType } = useStateContext();
   const [subMembers, setSubMembers] = useState(false);
   // Define paths where the header should not be displayed
-  const hiddenPaths = ["/login", "/register"]; // Add paths here
+  const hiddenPaths = ["/login", "/register", "/forgotpassword", "/resetpassword"]; // Add paths here
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Check if the current path is in the hiddenPaths array
